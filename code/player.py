@@ -8,7 +8,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__(group)
 
         self.import_assets()
-        self.status = 'down_idle'
+        self.status = 'down_axe'
         self.frame_index = 0
 
         self.image = self.animations[self.status][self.frame_index]
