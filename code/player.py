@@ -1,6 +1,7 @@
 import pygame
 from settings import *
 from support import *
+from timer import Timer
 
 
 class Player(pygame.sprite.Sprite):
@@ -8,7 +9,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__(group)
 
         self.import_assets()
-        self.status = 'down_axe'
+        self.status = 'down_idle'
         self.frame_index = 0
 
         self.image = self.animations[self.status][self.frame_index]
@@ -17,6 +18,15 @@ class Player(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2()
         self.pos = pygame.math.Vector2(self.rect.center)
         self.speed = 200
+
+        self.timers = {
+            'tool use': Timer(350, self.use_tool)
+        }
+
+        self.selected_tool = 'axe'
+
+    def use_tool(self):
+        print(self.selected_tool)
 
     def import_assets(self):
         self.animations = {'up': [], 'down': [], 'left': [], 'right': [],
@@ -28,24 +38,40 @@ class Player(pygame.sprite.Sprite):
         for animation in self.animations.keys():
             full_path = '../graphics/character/' + animation
             self.animations[animation] = import_folder(full_path)
-        print(self.animations)
+
+    def animate(self, dt):
+        self.frame_index += 4 * dt
+        if self.frame_index >= len(self.animations[self.status]):
+            self.frame_index = 0
+        self.image = self.animations[self.status][int(self.frame_index)]
 
     def input(self):
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_UP]:
             self.direction.y = -1
+            self.status = 'up'
         elif keys[pygame.K_DOWN]:
             self.direction.y = 1
+            self.status = 'down'
         else:
             self.direction.y = 0
 
         if keys[pygame.K_RIGHT]:
             self.direction.x = 1
+            self.status = 'right'
         elif keys[pygame.K_LEFT]:
             self.direction.x = -1
+            self.status = 'left'
         else:
             self.direction.x = 0
+
+
+        if keys[pygame.K_SPACE]:
+
+    def get_status(self):
+        if self.direction.magnitude() == 0:
+            self.status = self.status.split('_')[0] + '_idle'
 
     def move(self, dt):
         if self.direction.magnitude() > 0:
@@ -60,3 +86,6 @@ class Player(pygame.sprite.Sprite):
     def update(self, dt):
         self.input()
         self.move(dt)
+
+        self.animate(dt)
+        self.get_status()
